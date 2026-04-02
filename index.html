@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#ffd6e0">
+    <title>Floating Dreams | Happy Birthday, My Love</title>
+    <meta name="description" content="A special birthday celebration created with love.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Draggable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Enter Gate: Needed to unlock browser audio -->
+    <div id="enter-overlay">
+        <div class="enter-card">
+            <div class="enter-hearts"> HAPPY BIRTHDAY BABY💖 ✨ 💖</div>
+            <h1 class="enter-title">For My Favorite Person...</h1>
+            <p class="enter-sub">A surprise is waiting for you inside 🎁</p>
+            <button id="enter-btn">Enter Her Dream ✨</button>
+        </div>
+    </div>
+
+    <!-- Physics Background -->
+    <canvas id="physics-canvas"></canvas>
+
+    <main id="main-content">
+
+        <!-- ===== HERO ===== -->
+        <section class="hero" id="home">
+            <div class="hero-content">
+                <h1 class="hero-title" id="main-title">
+                    🎂 Happy Birthday Baby ✨💖
+                </h1>
+                <p class="hero-subtitle">Every dream begins with you.</p>
+
+                <div class="photo-container">
+                    <div class="photo-frame" id="hero-carousel">
+                        <img src="assets/default_photo.png" class="active" alt="Her Memory">
+                    </div>
+                    <div class="frame-dots" id="carousel-dots"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SCRATCH CARD ===== -->
+        <section class="surprise-section" id="surprise">
+            <h2 class="section-title">A Special Secret Just for You</h2>
+            <div class="scratch-card-wrapper glass-container">
+                <div class="scratch-card-container" id="scratch-container">
+                    <canvas id="scratch-canvas"></canvas>
+                    <div class="scratch-here-layer">Scratch Here ✨</div>
+                    <div class="scratch-reveal-content">
+                        <p class="scratch-message">You are my greatest adventure.<br>Happy Birthday, Beautiful! ❤️</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== MUSIC ===== -->
+        <section class="music-lounge" id="music">
+            <div class="music-widget glass-container">
+                <h2 class="music-title">Our Soundtrack 🎵</h2>
+                <p class="music-subtitle">Playing: <em id="now-playing-name">Hum Dum — Shiddat</em></p>
+                <!-- YouTube player: visually hidden but NOT display:none so it loads properly on Android/iOS -->
+                <div id="youtube-player" aria-hidden="true"></div>
+                <div class="music-controls">
+                    <button id="btn-prev" class="ctrl-btn" title="Previous">⏮</button>
+                    <button id="btn-play" class="ctrl-btn play-btn" title="Play/Pause">⏸</button>
+                    <button id="btn-next" class="ctrl-btn" title="Next">⏭</button>
+                </div>
+                <div class="music-track-list" id="track-list">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== LOVE BUBBLES ===== -->
+        <section class="love-bubbles-section" id="reasons">
+            <h2 class="section-title">Reasons Why I Love You</h2>
+            <div id="bubble-container" class="bubble-area"></div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <p>Created with Love for the World's Most Beautiful Girl 💕</p>
+        <button id="admin-trigger" class="admin-link">Admin Login</button>
+    </footer>
+
+    <!-- ===== ADMIN MODAL ===== -->
+    <div id="admin-modal" class="modal-bg" role="dialog" aria-modal="true">
+        <div class="modal-box glass-container">
+            <button class="modal-close" onclick="closeAdmin()" title="Close">✕</button>
+
+            <!-- LOGIN SCREEN -->
+            <div id="login-view">
+                <div class="admin-logo">🔐</div>
+                <h3 class="admin-heading">Admin Dashboard</h3>
+                <p class="admin-hint">Enter the magic word to continue</p>
+                <input type="password" id="admin-password" placeholder="Password" autocomplete="current-password">
+                <button class="admin-primary-btn" onclick="adminLogin()">Enter</button>
+            </div>
+
+            <!-- DASHBOARD SCREEN -->
+            <div id="dashboard-view" style="display:none;">
+                <h3 class="admin-heading">🌸 Manage Her Memories</h3>
+
+                <div class="admin-card">
+                    <h4 class="admin-card-title">📸 Upload Photos</h4>
+                    <input type="file" id="admin-photo-upload" accept="image/*" multiple class="file-input">
+                    <button class="admin-primary-btn" onclick="uploadGfPhotos()">Upload Memories ✨</button>
+                </div>
+
+                <div class="admin-card">
+                    <h4 class="admin-card-title">🖼️ Manage Gallery</h4>
+                    <div id="admin-photo-list" class="admin-photo-grid"></div>
+                </div>
+
+                <div class="admin-card">
+                    <h4 class="admin-card-title">🎵 Set Default Song</h4>
+                    <p class="admin-hint">Paste a YouTube Video ID (e.g. <code>1pSPZAGeO3w</code>)</p>
+                    <input type="text" id="admin-song-id" placeholder="YouTube Video ID" class="text-input">
+                    <button class="admin-primary-btn" onclick="updateDefaultSettings()">Update Song</button>
+                </div>
+
+                <button class="admin-secondary-btn" onclick="closeAdmin()">Close Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
