@@ -8,8 +8,6 @@ const TRACKS = [
 ];
 
 // ─── State ────────────────────────────────────────────
-let ytPlayer       = null;
-let playerReady    = false;
 let trackIdx       = 0;
 let isPlaying      = false;
 let carouselImgs   = [];
@@ -17,82 +15,37 @@ let carouselDots   = [];
 let slideIdx       = 0;
 let slideTimer     = null;
 let adminAuthed    = false;
-let pendingPlay    = false;   // queued play request before player is ready
+let pendingPlay    = false;   // queued play request before user interaction
 
-// ─── YouTube IFrame API ───────────────────────────────
-(function loadYT() {
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(tag);
-})();
+// ─── Native Audio API ───────────────────────────────
+const audio = document.getElementById('native-audio');
 
-window.onYouTubeIframeAPIReady = function () {
-    ytPlayer = new YT.Player('youtube-player', {
-        height: '1',
-        width: '1',
-        videoId: TRACKS[trackIdx].id,
-        playerVars: {
-            autoplay:     0,
-            controls:     0,
-            rel:          0,
-            playsinline:  1,   // ← CRITICAL for iOS & Android Chrome inline playback
-            modestbranding: 1,
-            origin:       window.location.origin
-        },
-        events: {
-            onReady:       onYTReady,
-            onStateChange: onYTState,
-            onError:       onYTError
-        }
-    });
-};
-
-function onYTReady() {
-    playerReady = true;
-    updateNowPlaying();
-
-    // If user already tapped Enter before player was ready, play now
-    if (pendingPlay) {
-        pendingPlay = false;
-        safePlay();
-    }
-}
-
-function onYTState(e) {
-    switch (e.data) {
-        case YT.PlayerState.PLAYING:
-            isPlaying = true;
-            document.getElementById('btn-play').textContent = '⏸';
-            updateActiveTrack();
-            break;
-        case YT.PlayerState.PAUSED:
-        case YT.PlayerState.BUFFERING:
-        case YT.PlayerState.CUED:
-            isPlaying = false;
-            document.getElementById('btn-play').textContent = '▶';
-            break;
-        case YT.PlayerState.ENDED:
-            nextTrack();
-            break;
-    }
-}
-
-function onYTError(e) {
-    console.warn('YouTube player error:', e.data, '— skipping to next track');
-    // Skip unplayable videos (e.g. region-blocked on mobile)
+audio.addEventListener('ended', nextTrack);
+audio.addEventListener('playing', () => {
+    isPlaying = true;
+    document.getElementById('btn-play').textContent = '⏸';
+    updateActiveTrack();
+});
+audio.addEventListener('pause', () => {
+    isPlaying = false;
+    document.getElementById('btn-play').textContent = '▶';
+});
+audio.addEventListener('error', (e) => {
+    console.warn('Audio play error. Skipping to next track...', e);
     setTimeout(nextTrack, 1200);
-}
+});
 
-// Safe play: handles not-yet-ready player and Android gesture requirement
+// Safe play: handles browser gesture requirements
 function safePlay() {
-    if (!ytPlayer || !playerReady) {
-        pendingPlay = true;
-        return;
+    if (!audio.src || audio.src.endsWith('undefined')) {
+        audio.src = `/api/stream/${TRACKS[trackIdx].id}`;
     }
-    try {
-        ytPlayer.playVideo();
-    } catch (err) {
-        console.warn('playVideo() failed:', err);
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+        playPromise.catch(err => {
+            console.warn('play() failed:', err);
+            pendingPlay = true;
+        });
     }
 }
 
@@ -140,9 +93,7 @@ async function fetchConfig() {
         updateNowPlaying();
 
         // Load the correct video into the player (no autoplay yet)
-        if (ytPlayer && playerReady) {
-            ytPlayer.cueVideoById(TRACKS[trackIdx].id);
-        }
+        audio.src = `/api/stream/${TRACKS[trackIdx].id}`;
 
         // Photos carousel
         if (data.photos && data.photos.length > 0) {
@@ -226,18 +177,13 @@ function buildTrackList() {
 }
 
 function loadTrack(autoPlay = false) {
-    if (!ytPlayer || !playerReady) return;
-
     const t = TRACKS[trackIdx];
     updateNowPlaying();
     updateActiveTrack();
 
+    audio.src = `/api/stream/${t.id}`;
     if (autoPlay) {
-        ytPlayer.loadVideoById(t.id);   // loadVideoById auto-plays
-        isPlaying = true;
-        document.getElementById('btn-play').textContent = '⏸';
-    } else {
-        ytPlayer.cueVideoById(t.id);    // cueVideoById queues without playing
+        safePlay();
     }
 }
 
@@ -252,14 +198,10 @@ function prevTrack() {
 }
 
 document.getElementById('btn-play').addEventListener('click', () => {
-    if (!ytPlayer || !playerReady) return;
     if (isPlaying) {
-        ytPlayer.pauseVideo();
-        // State update handled by onYTState
+        audio.pause();
     } else {
         safePlay();
-        isPlaying = true;
-        document.getElementById('btn-play').textContent = '⏸';
     }
 });
 
@@ -510,10 +452,8 @@ window.updateDefaultSettings = async () => {
     });
     if (res.ok) {
         alert('Song updated! ✨');
-        if (ytPlayer && playerReady) {
-            ytPlayer.loadVideoById(id);
-            isPlaying = true;
-        }
+        audio.src = `/api/stream/${id}`;
+        safePlay();
     } else alert('Failed to update song.');
 };
 

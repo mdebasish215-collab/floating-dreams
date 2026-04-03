@@ -1,5 +1,7 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, redirect, Response
+import urllib.request
 from flask_cors import CORS
+import yt_dlp
 import mysql.connector
 import os
 import time
@@ -179,6 +181,45 @@ def update_settings():
     except Exception as e:
         print(f'[update_settings] Error: {e}')
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/stream/<video_id>')
+def get_audio_stream(video_id):
+    try:
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'quiet': True,
+            'no_warnings': True,
+            'extract_flat': False
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
+            url = info.get('url')
+            if not url:
+                return jsonify({'error': 'No URL found'}), 404
+
+            req = urllib.request.Request(url)
+            req.add_header('User-Agent', 'Mozilla/5.0')
+            response = urllib.request.urlopen(req)
+
+            def generate():
+                while True:
+                    chunk = response.read(8192)
+                    if not chunk:
+                        break
+                    yield chunk
+
+            headers = {
+                'Content-Type': response.headers.get('Content-Type', 'audio/webm'),
+                'Accept-Ranges': 'bytes'
+            }
+            if 'Content-Length' in response.headers:
+                headers['Content-Length'] = response.headers['Content-Length']
+
+            return Response(generate(), headers=headers)
+            
+    except Exception as e:
+        print(f'[stream] Error: {e}')
+        return jsonify({'error': str(e)}), 500
 
 # ─── Health Check ─────────────────────────────────────────────────────────────
 @app.route('/health')

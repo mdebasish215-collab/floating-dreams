@@ -74,8 +74,8 @@
             <div class="music-widget glass-container">
                 <h2 class="music-title">Our Soundtrack 🎵</h2>
                 <p class="music-subtitle">Playing: <em id="now-playing-name">Hum Dum — Shiddat</em></p>
-                <!-- YouTube player: visually hidden but NOT display:none so it loads properly on Android/iOS -->
-                <div id="youtube-player" aria-hidden="true"></div>
+                <!-- Native HTML5 audio player using backend wrapper to bypass YouTube blocks -->
+                <audio id="native-audio" preload="none"></audio>
                 <div class="music-controls">
                     <button id="btn-prev" class="ctrl-btn" title="Previous">⏮</button>
                     <button id="btn-play" class="ctrl-btn play-btn" title="Play/Pause">⏸</button>

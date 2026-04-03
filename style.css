@@ -223,19 +223,8 @@ section {
     margin-bottom: 6px;
 }
 .music-subtitle { color: var(--rose-light); font-size: .95rem; margin-bottom: 20px; }
-/* YouTube iframe: hide visually but keep in DOM so Android/iOS can load it */
-#youtube-player {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-    overflow: hidden;
-}
-#youtube-player iframe {
-    width: 1px;
-    height: 1px;
-}
+/* Native Audio: hidden visually */
+#native-audio { display: none; }
 
 .music-controls {
     display: flex;
