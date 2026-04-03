@@ -1,10 +1,9 @@
 // ─── Tracks List ─────────────────────────────────────
 const TRACKS = [
     { id: '1pSPZAGeO3w', name: 'Hum Dum', artist: 'Shiddat' },
-    { id: 'a3OQTF7rDwA', name: 'Raataan Lambiyan', artist: 'Shershaah' },
-    { id: 'FE06O0_0wW8', name: 'Tum Hi Ho', artist: 'Aashiqui 2' },
-    { id: 'KDuXOL5yb_k', name: 'Pehla Nasha', artist: 'Jo Jeeta Wohi Sikandar' },
-    { id: 'Cez0TjiXUDE', name: 'Tera Ban Jaunga', artist: 'Kabir Singh' },
+    { id: 'zQxq2oqYrgM', name: 'Raataan Lambiyan (Lofi)', artist: 'Shershaah' },
+    { id: 'HLW8DepLaEg', name: 'Tum Hi Ho (Lofi)', artist: 'Aashiqui 2' },
+    { id: '532toSHe57E', name: 'Kesariya (Lofi)', artist: 'Brahmastra' }
 ];
 
 // ─── State ────────────────────────────────────────────
