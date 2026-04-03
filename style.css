@@ -277,6 +277,37 @@ section {
 .track-item.active { background: rgba(194,30,86,.12); color: var(--rose); font-weight: 600; }
 .track-item .track-icon { font-size: 1rem; }
 
+/* ─── Love Letter ───────────────────────────────────── */
+.letter-section {
+    padding-top: 0;
+}
+.letter-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 40px;
+}
+.letter-content p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 20px;
+    text-align: left;
+}
+.letter-content p:first-child {
+    font-family: var(--font-h);
+    font-size: 1.4rem;
+    color: var(--rose);
+    font-style: italic;
+    margin-bottom: 16px;
+}
+.letter-content p:last-child {
+    margin-bottom: 0;
+    font-weight: 600;
+    color: var(--rose);
+    text-align: center;
+    margin-top: 30px;
+}
+
 /* ─── Love Bubbles ──────────────────────────────────── */
 .bubble-area { width: 100%; max-width: 1100px; height: 580px; position: relative; }
 .bubble {
