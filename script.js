@@ -17,36 +17,66 @@ let slideTimer     = null;
 let adminAuthed    = false;
 let pendingPlay    = false;   // queued play request before user interaction
 
-// ─── Native Audio API ───────────────────────────────
-const audio = document.getElementById('native-audio');
+// ─── YouTube IFrame API ───────────────────────────────
+let ytPlayer = null;
+let ytPlayerReady = false;
 
-audio.addEventListener('ended', nextTrack);
-audio.addEventListener('playing', () => {
-    isPlaying = true;
-    document.getElementById('btn-play').textContent = '⏸';
-    updateActiveTrack();
-});
-audio.addEventListener('pause', () => {
-    isPlaying = false;
-    document.getElementById('btn-play').textContent = '▶';
-});
-audio.addEventListener('error', (e) => {
-    console.warn('Audio play error. Skipping to next track...', e);
+window.onYouTubeIframeAPIReady = function() {
+    ytPlayer = new YT.Player('youtube-player', {
+        height: '0',
+        width: '0',
+        videoId: TRACKS[trackIdx] ? TRACKS[trackIdx].id : '1pSPZAGeO3w',
+        playerVars: {
+            'autoplay': 0,
+            'controls': 0,
+            'disablekb': 1,
+            'fs': 0,
+            'rel': 0,
+            'showinfo': 0,
+            'modestbranding': 1,
+            'playsinline': 1
+        },
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange,
+            'onError': onPlayerError
+        }
+    });
+};
+
+function onPlayerReady(event) {
+    ytPlayerReady = true;
+    if (pendingPlay) {
+        safePlay();
+        pendingPlay = false;
+    }
+}
+
+function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.PLAYING) {
+        isPlaying = true;
+        document.getElementById('btn-play').textContent = '⏸';
+        updateActiveTrack();
+    } else if (event.data === YT.PlayerState.PAUSED) {
+        isPlaying = false;
+        document.getElementById('btn-play').textContent = '▶';
+    } else if (event.data === YT.PlayerState.ENDED) {
+        nextTrack();
+    }
+}
+
+function onPlayerError(event) {
+    console.warn('YouTube Player Error:', event.data, '. Skipping to next track...');
     setTimeout(nextTrack, 1200);
-});
+}
 
 // Safe play: handles browser gesture requirements
 function safePlay() {
-    if (!audio.src || audio.src.endsWith('undefined')) {
-        audio.src = `/api/stream/${TRACKS[trackIdx].id}`;
+    if (!ytPlayerReady) {
+        pendingPlay = true;
+        return;
     }
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-        playPromise.catch(err => {
-            console.warn('play() failed:', err);
-            pendingPlay = true;
-        });
-    }
+    ytPlayer.playVideo();
 }
 
 // ─── Enter Gate ───────────────────────────────────────
@@ -93,7 +123,9 @@ async function fetchConfig() {
         updateNowPlaying();
 
         // Load the correct video into the player (no autoplay yet)
-        audio.src = `/api/stream/${TRACKS[trackIdx].id}`;
+        if (ytPlayerReady) {
+            ytPlayer.cueVideoById(TRACKS[trackIdx].id);
+        }
 
         // Photos carousel
         if (data.photos && data.photos.length > 0) {
@@ -181,9 +213,12 @@ function loadTrack(autoPlay = false) {
     updateNowPlaying();
     updateActiveTrack();
 
-    audio.src = `/api/stream/${t.id}`;
-    if (autoPlay) {
-        safePlay();
+    if (ytPlayerReady) {
+        if (autoPlay) {
+            ytPlayer.loadVideoById(t.id);
+        } else {
+            ytPlayer.cueVideoById(t.id);
+        }
     }
 }
 
@@ -198,8 +233,8 @@ function prevTrack() {
 }
 
 document.getElementById('btn-play').addEventListener('click', () => {
-    if (isPlaying) {
-        audio.pause();
+    if (isPlaying && ytPlayerReady) {
+        ytPlayer.pauseVideo();
     } else {
         safePlay();
     }
@@ -452,8 +487,11 @@ window.updateDefaultSettings = async () => {
     });
     if (res.ok) {
         alert('Song updated! ✨');
-        audio.src = `/api/stream/${id}`;
-        safePlay();
+        if (ytPlayerReady) {
+            ytPlayer.loadVideoById(id);
+        } else {
+            TRACKS[trackIdx] = { id: id, name: 'Admin Pick', artist: '♥' };
+        }
     } else alert('Failed to update song.');
 };
 
