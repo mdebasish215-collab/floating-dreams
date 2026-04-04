@@ -403,6 +403,7 @@ async function loadAdminPhotos() {
             const img = document.createElement('img');
             img.src = p.path;
             img.alt = 'memory';
+            img.loading = 'lazy';
 
             const btn       = document.createElement('button');
             btn.className   = 'del-btn';
@@ -464,6 +465,28 @@ window.deletePhoto = async (id) => {
     await fetch(`/api/photo/${id}`, { method: 'DELETE' });
     loadAdminPhotos();
     fetchConfig();
+};
+
+window.clearAllPhotos = async () => {
+    if (!confirm('Are you sure you want to delete ALL photos? This cannot be undone!')) return;
+    const btn = document.getElementById('clear-all-photos-btn');
+    const oldText = btn.innerHTML;
+    btn.innerHTML = '⏳ Clearing...';
+    btn.disabled = true;
+    try {
+        const res = await fetch('/api/photo/all', { method: 'DELETE' });
+        if (res.ok) {
+            loadAdminPhotos();
+            fetchConfig();
+            alert('All photos cleared!');
+        } else {
+            alert('Failed to clear photos.');
+        }
+    } catch {
+        alert('Network error.');
+    }
+    btn.innerHTML = oldText;
+    btn.disabled = false;
 };
 
 window.uploadGfPhotos = async () => {

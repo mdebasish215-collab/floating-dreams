@@ -167,6 +167,25 @@ def delete_photo(photo_id):
         print(f'[delete_photo] Error: {e}')
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+@app.route('/api/photo/all', methods=['DELETE'])
+def delete_all_photos():
+    try:
+        conn   = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT path FROM photos")
+        photos = cursor.fetchall()
+        for photo in photos:
+            file_path = os.path.join(app.static_folder, photo['path'])
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        cursor.execute("DELETE FROM photos")
+        conn.commit()
+        conn.close()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        print(f'[delete_all_photos] Error: {e}')
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
     try:
