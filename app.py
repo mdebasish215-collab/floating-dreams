@@ -2,22 +2,12 @@ from flask import Flask, request, jsonify, send_from_directory, redirect, Respon
 import urllib.request
 from flask_cors import CORS
 import yt_dlp
-import mysql.connector
+import sqlite3
 import os
 import time
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
-
-# ─── DB Config ────────────────────────────────────────────────────────────────
-# Default values are configured for PythonAnywhere (mdebasish215).
-DB_CONFIG = {
-    'host':     os.environ.get('MYSQLHOST',     'mdebasish215.mysql.pythonanywhere-services.com'),
-    'port':     int(os.environ.get('MYSQLPORT', '3306')),
-    'user':     os.environ.get('MYSQLUSER',     'mdebasish215'),
-    'password': os.environ.get('MYSQLPASSWORD', 'YOUR_PYTHONANYWHERE_DB_PASSWORD'),
-    'database': os.environ.get('MYSQLDATABASE', 'mdebasish215$birthday_db'),
-}
 
 # ─── Static Routes ────────────────────────────────────────────────────────────
 @app.route('/')
@@ -30,33 +20,35 @@ def static_proxy(path):
 
 # ─── DB Helper ────────────────────────────────────────────────────────────────
 def get_db_connection():
-    return mysql.connector.connect(**DB_CONFIG)
+    # check_same_thread=False is needed in Flask when using global SQLite
+    conn = sqlite3.connect('database.db', check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def ensure_tables():
-    """Create tables if they don't exist (runs on first request to Railway MySQL)."""
+    """Create tables if they don't exist using SQLite."""
     try:
         conn   = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS config (
-                id               INT AUTO_INCREMENT PRIMARY KEY,
-                photo_path       VARCHAR(255) DEFAULT 'assets/default_photo.png',
-                default_song_id  VARCHAR(50)  DEFAULT '1pSPZAGeO3w',
-                admin_password   VARCHAR(255) DEFAULT 'love2026'
+                id               INTEGER PRIMARY KEY AUTOINCREMENT,
+                photo_path       TEXT DEFAULT 'assets/default_photo.png',
+                default_song_id  TEXT DEFAULT '1pSPZAGeO3w',
+                admin_password   TEXT DEFAULT 'love2026'
             )
         """)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS photos (
-                id         INT AUTO_INCREMENT PRIMARY KEY,
-                path       VARCHAR(255) NOT NULL,
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                path       TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
         # Seed default config row if missing
         cursor.execute("""
-            INSERT INTO config (id, photo_path, default_song_id, admin_password)
+            INSERT OR IGNORE INTO config (id, photo_path, default_song_id, admin_password)
             VALUES (1, 'assets/default_photo.png', '1pSPZAGeO3w', 'love2026')
-            ON DUPLICATE KEY UPDATE id=1
         """)
         conn.commit()
         conn.close()
@@ -74,11 +66,11 @@ except Exception as e:
 def get_config():
     try:
         conn   = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         cursor.execute("SELECT photo_path, default_song_id FROM config LIMIT 1")
         config = cursor.fetchone()
         cursor.execute("SELECT id, path FROM photos ORDER BY created_at DESC")
-        photos = cursor.fetchall()
+        photos = [dict(row) for row in cursor.fetchall()]
         conn.close()
         return jsonify({
             'photo_path':       config['photo_path']      if config else 'assets/default_photo.png',
@@ -99,9 +91,9 @@ def login():
         data     = request.json
         password = data.get('password', '')
         conn     = get_db_connection()
-        cursor   = conn.cursor(dictionary=True)
+        cursor   = conn.cursor()
         cursor.execute(
-            "SELECT admin_password FROM config WHERE admin_password = %s LIMIT 1",
+            "SELECT admin_password FROM config WHERE admin_password = ? LIMIT 1",
             (password,)
         )
         admin = cursor.fetchone()
@@ -138,7 +130,7 @@ def upload_photo():
             save_path = os.path.join(assets_dir, filename)
             file.save(save_path)
             path = f'assets/{filename}'
-            cursor.execute("INSERT INTO photos (path) VALUES (%s)", (path,))
+            cursor.execute("INSERT INTO photos (path) VALUES (?)", (path,))
             saved_paths.append(path)
 
         conn.commit()
@@ -152,14 +144,14 @@ def upload_photo():
 def delete_photo(photo_id):
     try:
         conn   = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT path FROM photos WHERE id = %s", (photo_id,))
+        cursor = conn.cursor()
+        cursor.execute("SELECT path FROM photos WHERE id = ?", (photo_id,))
         photo  = cursor.fetchone()
         if photo:
             file_path = os.path.join(app.static_folder, photo['path'])
             if os.path.exists(file_path):
                 os.remove(file_path)
-            cursor.execute("DELETE FROM photos WHERE id = %s", (photo_id,))
+            cursor.execute("DELETE FROM photos WHERE id = ?", (photo_id,))
             conn.commit()
         conn.close()
         return jsonify({'status': 'success'})
@@ -171,7 +163,7 @@ def delete_photo(photo_id):
 def delete_all_photos():
     try:
         conn   = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         cursor.execute("SELECT path FROM photos")
         photos = cursor.fetchall()
         for photo in photos:
@@ -193,7 +185,7 @@ def update_settings():
         song_id = data.get('song_id', '')
         conn    = get_db_connection()
         cursor  = conn.cursor()
-        cursor.execute("UPDATE config SET default_song_id = %s WHERE id = 1", (song_id,))
+        cursor.execute("UPDATE config SET default_song_id = ? WHERE id = 1", (song_id,))
         conn.commit()
         conn.close()
         return jsonify({'status': 'success'})
