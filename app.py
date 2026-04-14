@@ -9,14 +9,14 @@ import time
 app = Flask(__name__, static_folder='.')
 CORS(app)
 
-# ─── DB Config — reads Railway env vars automatically ─────────────────────────
-# Railway MySQL plugin injects: MYSQLHOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE
+# ─── DB Config ────────────────────────────────────────────────────────────────
+# Default values are configured for PythonAnywhere (mdebasish215).
 DB_CONFIG = {
-    'host':     os.environ.get('MYSQLHOST',     'localhost'),
+    'host':     os.environ.get('MYSQLHOST',     'mdebasish215.mysql.pythonanywhere-services.com'),
     'port':     int(os.environ.get('MYSQLPORT', '3306')),
-    'user':     os.environ.get('MYSQLUSER',     'root'),
-    'password': os.environ.get('MYSQLPASSWORD', '8268'),
-    'database': os.environ.get('MYSQLDATABASE', 'birthday_db'),
+    'user':     os.environ.get('MYSQLUSER',     'mdebasish215'),
+    'password': os.environ.get('MYSQLPASSWORD', 'YOUR_PYTHONANYWHERE_DB_PASSWORD'),
+    'database': os.environ.get('MYSQLDATABASE', 'mdebasish215$birthday_db'),
 }
 
 # ─── Static Routes ────────────────────────────────────────────────────────────
