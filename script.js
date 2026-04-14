@@ -1,5 +1,6 @@
 // ─── Tracks List ─────────────────────────────────────
 const TRACKS = [
+    { id: 'dSPocMXYd-8', name: 'Tate Jebe Dekhe', artist: 'Kuldeep & Ananya' },
     { id: '1pSPZAGeO3w', name: 'Hum Dum', artist: 'Shiddat' },
     { id: 'zQxq2oqYrgM', name: 'Raataan Lambiyan (Lofi)', artist: 'Shershaah' },
     { id: 'HLW8DepLaEg', name: 'Tum Hi Ho (Lofi)', artist: 'Aashiqui 2' },
