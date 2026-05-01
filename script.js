@@ -624,3 +624,33 @@ buildTrackList();
 
     wraps.forEach(w => observer.observe(w));
 })();
+
+// ─── Floating Love Animation (Continuous Hearts) ──────
+(function initFloatingHearts() {
+    const symbols = ['💖', '💕', '💗', '💓', '✨'];
+    
+    setInterval(() => {
+        // Only spawn if tab is active to save phone battery
+        if (document.hidden) return;
+        
+        const h = document.createElement('div');
+        h.className = 'floating-heart';
+        h.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        
+        // Random horizontal position
+        h.style.left = Math.random() * 95 + 'vw';
+        
+        // Random size (between 12px and 28px)
+        const size = Math.random() * 16 + 12; 
+        h.style.fontSize = size + 'px';
+        
+        // Random duration between 7s and 14s for slow gentle floating
+        const duration = Math.random() * 7 + 7;
+        h.style.animationDuration = duration + 's';
+        
+        document.body.appendChild(h);
+        
+        // Remove from DOM after animation completes
+        setTimeout(() => h.remove(), duration * 1000);
+    }, 1200); // Spawn a new heart every 1.2 seconds
+})();
