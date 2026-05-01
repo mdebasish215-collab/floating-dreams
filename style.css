@@ -18,6 +18,116 @@ body {
     font-family: var(--font-b);
     color: #444;
     overflow-x: hidden;
+    cursor: none;
+}
+
+/* ─── Custom Magical Cursor ─────────────────────────── */
+#custom-cursor {
+    position: fixed;
+    width: 18px; height: 18px;
+    background: radial-gradient(circle, #fff 0%, var(--rose-light) 60%, transparent 100%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, opacity 0.3s;
+    mix-blend-mode: normal;
+    box-shadow: 0 0 12px 4px rgba(224,130,157,0.6), 0 0 24px 8px rgba(194,30,86,0.25);
+}
+.cursor-heart {
+    position: fixed;
+    pointer-events: none;
+    z-index: 99998;
+    font-size: 14px;
+    animation: heartFly 0.9s ease-out forwards;
+    transform: translate(-50%, -50%);
+}
+@keyframes heartFly {
+    0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -120%) scale(0.4); }
+}
+
+/* ─── Aurora Animated Background ───────────────────── */
+#aurora-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+    pointer-events: none;
+}
+.aurora-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.22;
+    animation: auroraDrift 12s ease-in-out infinite alternate;
+}
+.aurora-blob:nth-child(1) {
+    width: 600px; height: 500px;
+    background: radial-gradient(circle, #ffb3c8, transparent 70%);
+    top: -100px; left: -100px;
+    animation-duration: 14s;
+}
+.aurora-blob:nth-child(2) {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #ffd6e0, transparent 70%);
+    top: 30%; right: -120px;
+    animation-duration: 11s;
+    animation-delay: -4s;
+}
+.aurora-blob:nth-child(3) {
+    width: 700px; height: 400px;
+    background: radial-gradient(circle, #ffccd5, transparent 70%);
+    bottom: -100px; left: 20%;
+    animation-duration: 16s;
+    animation-delay: -7s;
+}
+.aurora-blob:nth-child(4) {
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, #D4AF37, transparent 70%);
+    opacity: 0.08;
+    top: 50%; left: 50%;
+    animation-duration: 18s;
+    animation-delay: -2s;
+}
+@keyframes auroraDrift {
+    0%   { transform: translate(0, 0) scale(1); }
+    33%  { transform: translate(40px, -30px) scale(1.08); }
+    66%  { transform: translate(-30px, 20px) scale(0.95); }
+    100% { transform: translate(20px, 40px) scale(1.05); }
+}
+
+/* ─── Audio Visualizer ──────────────────────────────── */
+#audio-visualizer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    height: 36px;
+    margin: 12px 0;
+}
+.viz-bar {
+    width: 5px;
+    border-radius: 3px 3px 0 0;
+    background: linear-gradient(to top, var(--rose), var(--rose-light));
+    height: 4px;
+    transition: height 0.1s ease;
+}
+.viz-bar.dancing {
+    animation: vizDance 0.5s ease-in-out infinite alternate;
+}
+.viz-bar:nth-child(1)  { animation-delay: 0.0s; }
+.viz-bar:nth-child(2)  { animation-delay: 0.06s; }
+.viz-bar:nth-child(3)  { animation-delay: 0.12s; }
+.viz-bar:nth-child(4)  { animation-delay: 0.18s; }
+.viz-bar:nth-child(5)  { animation-delay: 0.24s; }
+.viz-bar:nth-child(6)  { animation-delay: 0.18s; }
+.viz-bar:nth-child(7)  { animation-delay: 0.12s; }
+.viz-bar:nth-child(8)  { animation-delay: 0.06s; }
+.viz-bar:nth-child(9)  { animation-delay: 0.0s; }
+@keyframes vizDance {
+    0%   { height: 4px; }
+    100% { height: var(--max-h, 28px); }
 }
 
 /* ─── Physics BG Canvas ─────────────────────────────── */
@@ -80,6 +190,9 @@ body {
     border: 1px solid var(--glass-b);
     box-shadow: var(--shadow);
     border-radius: 24px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
 }
 
 /* ─── Sections ──────────────────────────────────────── */
@@ -156,8 +269,17 @@ section {
     object-fit: cover;
     opacity: 0;
     transition: opacity 1.2s ease-in-out;
+    transform-origin: center center;
 }
-.photo-frame img.active { opacity: 1; }
+.photo-frame img.active {
+    opacity: 1;
+    animation: kenBurns 8s ease-in-out infinite alternate;
+}
+@keyframes kenBurns {
+    0%   { transform: scale(1)    translateX(0)    translateY(0); }
+    50%  { transform: scale(1.08) translateX(-12px) translateY(-6px); }
+    100% { transform: scale(1.05) translateX(8px)  translateY(4px); }
+}
 
 .frame-dots {
     display: flex;
@@ -487,6 +609,29 @@ section {
 @keyframes float {
     0%, 100% { transform: translateY(0); }
     50%       { transform: translateY(-10px); }
+}
+
+/* ─── Typewriter Effect ─────────────────────────────── */
+.typewriter-wrap {
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.typewriter-wrap.visible {
+    opacity: 1;
+}
+.typewriter-cursor {
+    display: inline-block;
+    width: 2px;
+    background: var(--rose);
+    margin-left: 2px;
+    animation: blink 0.75s step-end infinite;
+    vertical-align: text-bottom;
+    height: 1.1em;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
 }
 
 /* ─── Responsive ─────────────────────────────────────── */

@@ -24,6 +24,17 @@
 
 <body>
 
+    <!-- Aurora Animated Background -->
+    <div id="aurora-bg">
+        <div class="aurora-blob"></div>
+        <div class="aurora-blob"></div>
+        <div class="aurora-blob"></div>
+        <div class="aurora-blob"></div>
+    </div>
+
+    <!-- Custom Magical Cursor -->
+    <div id="custom-cursor"></div>
+
     <!-- Enter Gate: Needed to unlock browser audio -->
     <div id="enter-overlay">
         <div class="enter-card">
@@ -85,6 +96,18 @@
                     <button id="btn-play" class="ctrl-btn play-btn" title="Play/Pause">⏸</button>
                     <button id="btn-next" class="ctrl-btn" title="Next">⏭</button>
                 </div>
+                <!-- Audio Visualizer -->
+                <div id="audio-visualizer">
+                    <div class="viz-bar" style="--max-h:12px"></div>
+                    <div class="viz-bar" style="--max-h:22px"></div>
+                    <div class="viz-bar" style="--max-h:30px"></div>
+                    <div class="viz-bar" style="--max-h:20px"></div>
+                    <div class="viz-bar" style="--max-h:34px"></div>
+                    <div class="viz-bar" style="--max-h:26px"></div>
+                    <div class="viz-bar" style="--max-h:34px"></div>
+                    <div class="viz-bar" style="--max-h:20px"></div>
+                    <div class="viz-bar" style="--max-h:12px"></div>
+                </div>
                 <div class="music-track-list" id="track-list">
                     <!-- Injected by JS -->
                 </div>
@@ -121,16 +144,16 @@
             <h2 class="section-title">Every Version of You 💫</h2>
             <div class="letter-container glass-container">
                 <div class="letter-content" style="text-align: center;">
-                    <p style="text-align: center;">"I’ve seen her naked, I’ve seen her scars, her flaws, her crying at
-                        2am, her mood swings.. I’ve seen her hungry, dramatic, jealous, tired, messy, everything!</p>
-                    <p style="text-align: center;">I’ve seen her on the bad days, the worst days, and the days she
-                        didn’t even like herself.</p>
-                    <p style="text-align: center;">And yet, every version of her made me fall in love with her a little
-                        more.</p>
-                    <p style="text-align: center;">And I would say it a million times:<br><br><span
-                            style="font-size: 1.3rem;">“She is the best thing that has ever happened to me...<br>She is
-                            perfect!” 💖</span></p>
-                    <p>Yours always,<br>Debasish 💕</p>
+                    <div class="typewriter-wrap" id="tw-line1"><p style="text-align: center;">&ldquo;I&rsquo;ve seen her naked, I&rsquo;ve seen her scars, her flaws, her crying at
+                        2am, her mood swings.. I&rsquo;ve seen her hungry, dramatic, jealous, tired, messy, everything!</p></div>
+                    <div class="typewriter-wrap" id="tw-line2"><p style="text-align: center;">I&rsquo;ve seen her on the bad days, the worst days, and the days she
+                        didn&rsquo;t even like herself.</p></div>
+                    <div class="typewriter-wrap" id="tw-line3"><p style="text-align: center;">And yet, every version of her made me fall in love with her a little
+                        more.</p></div>
+                    <div class="typewriter-wrap" id="tw-line4"><p style="text-align: center;">And I would say it a million times:<br><br><span
+                            style="font-size: 1.3rem;">&ldquo;She is the best thing that has ever happened to me...<br>She is
+                            perfect!&rdquo; 💖</span></p></div>
+                    <div class="typewriter-wrap" id="tw-line5"><p>Yours always,<br>Debasish 💕</p></div>
                 </div>
             </div>
         </section>

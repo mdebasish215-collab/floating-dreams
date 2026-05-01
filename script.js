@@ -528,3 +528,99 @@ function shake(selector) {
 // ─── Init ─────────────────────────────────────────────
 fetchConfig();
 buildTrackList();
+
+// ─── Magical Custom Cursor ────────────────────────────
+(function initCursor() {
+    const cursor = document.getElementById('custom-cursor');
+    if (!cursor) return;
+    let cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    let heartTimer = null;
+
+    document.addEventListener('mousemove', (e) => {
+        cx = e.clientX; cy = e.clientY;
+        cursor.style.left = cx + 'px';
+        cursor.style.top  = cy + 'px';
+    });
+
+    // Spawn floating hearts on movement (throttled)
+    document.addEventListener('mousemove', (e) => {
+        if (heartTimer) return;
+        heartTimer = setTimeout(() => {
+            heartTimer = null;
+            const symbols = ['💖', '✨', '💕', '🌸', '💗'];
+            const h = document.createElement('span');
+            h.className = 'cursor-heart';
+            h.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            h.style.left = (e.clientX + (Math.random() * 16 - 8)) + 'px';
+            h.style.top  = (e.clientY + (Math.random() * 16 - 8)) + 'px';
+            document.body.appendChild(h);
+            setTimeout(() => h.remove(), 950);
+        }, 120);
+    });
+
+    // Also show cursor on touch devices as a sparkle
+    document.addEventListener('touchmove', (e) => {
+        const t = e.touches[0];
+        cursor.style.left = t.clientX + 'px';
+        cursor.style.top  = t.clientY + 'px';
+    }, { passive: true });
+})();
+
+// ─── 3D Tilt Effect on Glass Cards ───────────────────
+(function initTilt() {
+    document.querySelectorAll('.glass-container').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const r = card.getBoundingClientRect();
+            const x = (e.clientX - r.left) / r.width  - 0.5;
+            const y = (e.clientY - r.top)  / r.height - 0.5;
+            card.style.transform = `perspective(800px) rotateY(${x * 10}deg) rotateX(${-y * 10}deg) scale(1.02)`;
+            card.style.boxShadow = `${-x * 20}px ${y * 20}px 40px rgba(194,30,86,0.2), 0 8px 32px rgba(194,30,86,0.15)`;
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform  = '';
+            card.style.boxShadow  = '';
+        });
+    });
+})();
+
+// ─── Audio Visualizer ─────────────────────────────────
+(function initVisualizer() {
+    const bars = document.querySelectorAll('.viz-bar');
+    function startViz() { bars.forEach(b => b.classList.add('dancing')); }
+    function stopViz()  { bars.forEach(b => b.classList.remove('dancing')); }
+
+    // Hook into the existing YT state change
+    const origStateChange = window.onPlayerStateChange || function(){};
+    window._vizStateHook = function(event) {
+        if (event.data === YT.PlayerState.PLAYING) startViz();
+        else stopViz();
+    };
+
+    // Patch onPlayerStateChange in script to also call our hook
+    const _orig = onPlayerStateChange;
+    window.onPlayerStateChange = function(event) {
+        _orig(event);
+        window._vizStateHook(event);
+    };
+})();
+
+// ─── Typewriter Scroll Reveal ─────────────────────────
+(function initTypewriterReveal() {
+    const wraps = document.querySelectorAll('.typewriter-wrap');
+    if (!wraps.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                const idx = Array.from(wraps).indexOf(el);
+                setTimeout(() => {
+                    el.classList.add('visible');
+                }, idx * 350);
+                observer.unobserve(el);
+            }
+        });
+    }, { threshold: 0.3 });
+
+    wraps.forEach(w => observer.observe(w));
+})();
