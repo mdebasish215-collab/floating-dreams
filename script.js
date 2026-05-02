@@ -493,11 +493,33 @@ window.clearAllPhotos = async () => {
 window.uploadGfPhotos = async () => {
     const input = document.getElementById('admin-photo-upload');
     if (!input.files.length) { alert('Please select at least one photo!'); return; }
-    const fd = new FormData();
-    Array.from(input.files).forEach(f => fd.append('photos', f));
-    const res = await fetch('/api/upload', { method: 'POST', body: fd });
-    if (res.ok) { alert('✨ Photos uploaded!'); input.value = ''; loadAdminPhotos(); fetchConfig(); }
-    else alert('Upload failed — check the server.');
+    
+    // Find the button to show loading state
+    const btn = input.nextElementSibling;
+    const oldText = btn.textContent;
+    btn.textContent = '⏳ Uploading...';
+    btn.disabled = true;
+    
+    try {
+        const fd = new FormData();
+        Array.from(input.files).forEach(f => fd.append('photos', f));
+        const res = await fetch('/api/upload', { method: 'POST', body: fd });
+        
+        if (res.ok) { 
+            alert('✨ Photos uploaded!'); 
+            input.value = ''; 
+            loadAdminPhotos(); 
+            fetchConfig(); 
+        } else {
+            const errText = await res.text();
+            alert(`Upload failed (Error ${res.status}): ${errText.slice(0, 50)}... Please try uploading 1 or 2 photos at a time.`);
+        }
+    } catch (err) {
+        alert('Network Error: ' + err.message + '\nAre you connected to the internet?');
+    }
+    
+    btn.textContent = oldText;
+    btn.disabled = false;
 };
 
 window.updateDefaultSettings = async () => {
